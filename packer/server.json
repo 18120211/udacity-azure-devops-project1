@@ -1,31 +1,33 @@
 {
-	"variables": {
-	  "client_id": "{{env `a8c7cb35-d040-42c4-8147-432282ce2517`}}",
-	  "client_secret": "{{env `Cvk8Q~KWbZbPf.RcZ4jfX0Fdk2xfh_WOcVmLZa2n`}}",
-	  "subscription_id": "{{env `b65dd3c1-7840-4cd9-9242-97f445dde84d`}}"
-	},
-	"builders": [
-	  {
-		"type": "azure-arm",
-		"os_type": "Linux",
-		"image_publisher": "Canonical",
-		"image_offer": "UbuntuServer",
-		"image_sku": "18.04-LTS",
-		"managed_image_resource_group_name": "Azuredevops",
-		"managed_image_name": "im-azure-project1",
-		"location": "East US",
-		"vm_size": "Standard_B1s"
-	  }
-	],
-	"provisioners": [
-	  {
-		"inline": [
-		  "echo 'Hello, World!' > index.html",
-		  "nohup busybox httpd -f -p 80 &"
-		],
-		"inline_shebang": "/bin/sh -x",
-		"type": "shell"
-	  }
-	]
+    "builders": [
+      {
+        "client_id": "a8c7cb35-d040-42c4-8147-432282ce2517",
+        "client_secret": "Cvk8Q~KWbZbPf.RcZ4jfX0Fdk2xfh_WOcVmLZa2n",
+        "tenant_id": "147a0bf9-fbd2-460e-af33-8e22c01c5e8f",
+        "subscription_id": "b65dd3c1-7840-4cd9-9242-97f445dde84d",
+        "type": "azure-arm",
+        "os_type": "Linux",
+        "image_publisher": "Canonical",
+        "image_offer": "UbuntuServer",
+        "image_sku": "18.04-LTS",
+        "managed_image_resource_group_name": "test-group",
+        "managed_image_name": "im-azure-project1",
+        "location": "East US",
+        "vm_size": "Standard_B1s",
+        "azure_tags": {
+          "project": "Udacity"
+        }
+      }
+    ],
+    "provisioners": [
+      {
+        "inline": [
+          "echo 'Hello, World!' > index.html",
+          "nohup busybox httpd -f -p 80 &"
+        ],
+        "inline_shebang": "/bin/sh -x",
+        "type": "shell"
+      }
+    ]
   }
   
