@@ -1,37 +1,42 @@
 {
-    "builders": [
-      {
-        "client_id": "a8c7cb35-d040-42c4-8147-432282ce2517",
-        "client_secret": "Cvk8Q~KWbZbPf.RcZ4jfX0Fdk2xfh_WOcVmLZa2n",
-        "tenant_id": "147a0bf9-fbd2-460e-af33-8e22c01c5e8f",
-        "subscription_id": "b65dd3c1-7840-4cd9-9242-97f445dde84d",
-        "type": "azure-arm",
-        "os_type": "Linux",
-        "image_publisher": "Canonical",
-        "image_offer": "UbuntuServer",
-        "image_sku": "18.04-LTS",
-        "managed_image_resource_group_name": "rg-udacity-images",
-        "managed_image_name": "im-azure-project1",
-        "location": "East US",
-        "vm_size": "Standard_B1s",
-        "azure_tags": {
-          "project": "Udacity"
-        }
+  "variables": {
+    "client_id": "null",
+    "client_secret": "null",
+    "subscription_id": "null",
+    "tenant_id": "147a0bf9-fbd2-460e-af33-8e22c01c5e8f"
+  },
+  "builders": [
+    {
+      "client_id": "{{user `client_id`}}",
+      "client_secret": "{{user `client_secret`}}",
+      "tenant_id": "{{user `tenant_id`}}",
+      "subscription_id": "{{user `subscription_id`}}",
+      "type": "azure-arm",
+      "os_type": "Linux",
+      "image_publisher": "Canonical",
+      "image_offer": "UbuntuServer",
+      "image_sku": "18.04-LTS",
+      "managed_image_resource_group_name": "rg-udacity-images",
+      "managed_image_name": "im-azure-project1",
+      "location": "East US",
+      "vm_size": "Standard_B1s",
+      "azure_tags": {
+        "project": "Udacity"
       }
-    ],
-    "provisioners": [
-      {
-        "inline": [
-          "apt-get update",
-          "apt-get upgrade -y",
-          "apt-get -y install nginx",
-          "rm -rf /var/www/html/*",
-          "echo 'Anh Yeu Em!!!!!!!!' > /var/www/html/index.html"
-        ],
-        "inline_shebang": "/bin/sh -x",
-        "type": "shell",
-        "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'"
-      }
-    ]
-  }
-  
+    }
+  ],
+  "provisioners": [
+    {
+      "inline": [
+        "apt-get update",
+        "apt-get upgrade -y",
+        "apt-get -y install nginx",
+        "rm -rf /var/www/html/*",
+        "echo 'Anh Yeu Em!!!!!!!!' > /var/www/html/index.html"
+      ],
+      "inline_shebang": "/bin/sh -x",
+      "type": "shell",
+      "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'"
+    }
+  ]
+}

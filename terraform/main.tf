@@ -1,34 +1,37 @@
 resource "azurerm_resource_group" "rg" {
   location = var.region
   name     = "rg-${var.project_name}"
+  tags     = var.tags
 }
 
 resource "azurerm_network_security_group" "nsg" {
   name                = "nsg-${var.project_name}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+  tags                = var.tags
 }
 
 # just for testing
-resource "azurerm_network_security_rule" "internal" {
-  name                        = "internal"
-  priority                    = 100
-  direction                   = "Inbound"
-  access                      = "Allow"
-  protocol                    = "Tcp"
-  source_port_range           = "*"
-  destination_port_range      = "*"
-  source_address_prefix       = "*"
-  destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.rg.name
-  network_security_group_name = azurerm_network_security_group.nsg.name
-}
+# resource "azurerm_network_security_rule" "internal" {
+#   name                        = "internal"
+#   priority                    = 100
+#   direction                   = "Inbound"
+#   access                      = "Allow"
+#   protocol                    = "Tcp"
+#   source_port_range           = "*"
+#   destination_port_range      = "*"
+#   source_address_prefix       = "*"
+#   destination_address_prefix  = "*"
+#   resource_group_name         = azurerm_resource_group.rg.name
+#   network_security_group_name = azurerm_network_security_group.nsg.name
+# }
 
 resource "azurerm_virtual_network" "vnet" {
   name                = "vnet-${var.project_name}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   address_space       = ["10.0.0.0/16"]
+  tags                = var.tags
 
 }
 
@@ -48,6 +51,7 @@ resource "azurerm_network_interface" "nic" {
     subnet_id                     = azurerm_subnet.subnet_private.id
     private_ip_address_allocation = "Dynamic"
   }
+  tags = var.tags
 }
 
 resource "azurerm_public_ip" "ip" {
@@ -55,7 +59,7 @@ resource "azurerm_public_ip" "ip" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   allocation_method   = "Static"
-
+  tags                = var.tags
 }
 
 resource "azurerm_lb" "lb" {
@@ -67,6 +71,7 @@ resource "azurerm_lb" "lb" {
     name                 = "PublicIPAddress"
     public_ip_address_id = azurerm_public_ip.ip.id
   }
+  tags = var.tags
 }
 
 resource "azurerm_lb_backend_address_pool" "backendpool" {
@@ -112,6 +117,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "vmss" {
     disk_size_gb         = 30
   }
 
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = local.ssh_public_key
+  }
+
 
   network_interface {
     name                      = "vmss-${var.project_name}"
@@ -124,8 +134,14 @@ resource "azurerm_linux_virtual_machine_scale_set" "vmss" {
       primary                                = true
       subnet_id                              = azurerm_subnet.subnet_private.id
       load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.backendpool.id]
+
+      # For testing
+      # public_ip_address  {
+      #   name = "vmss-${var.project_name}"
+      # }
     }
   }
+  tags = var.tags
 }
 
 
@@ -136,7 +152,7 @@ resource "azurerm_monitor_autoscale_setting" "autoscale" {
   target_resource_id  = azurerm_linux_virtual_machine_scale_set.vmss.id
 
   profile {
-    name = "defaultProfile"
+    name = "autoscale-${var.project_name}"
 
     capacity {
       default = var.default_vm_capacity
@@ -193,4 +209,5 @@ resource "azurerm_monitor_autoscale_setting" "autoscale" {
       custom_emails                         = [var.notification_email]
     }
   }
+  tags = var.tags
 }

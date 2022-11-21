@@ -1,0 +1,35 @@
+{
+    "properties": {
+      "displayName": "tagging-policy",
+      "policyType": "Custom",
+      "mode": "Indexed",
+      "metadata": {
+        "createdBy": "cd08cc2f-74a2-4db9-9c81-f71face7dff6",
+        "createdOn": "2022-11-16T10:37:12.9951165Z",
+        "updatedBy": "cd08cc2f-74a2-4db9-9c81-f71face7dff6",
+        "updatedOn": "2022-11-21T15:12:24.3579698Z",
+        "category": "Tags"
+      },
+      "parameters": {},
+      "policyRule": {
+        "if": {
+          "field": "tags",
+          "exists": "false"
+        },
+        "then": {
+          "effect": "deny"
+        }
+      }
+    },
+    "id": "/subscriptions/b65dd3c1-7840-4cd9-9242-97f445dde84d/providers/Microsoft.Authorization/policyDefinitions/ba1149fc-ccc3-4e0f-8547-e89ef47a36d1",
+    "type": "Microsoft.Authorization/policyDefinitions",
+    "name": "ba1149fc-ccc3-4e0f-8547-e89ef47a36d1",
+    "systemData": {
+      "createdBy": "azure0minhthevo@gmail.com",
+      "createdByType": "User",
+      "createdAt": "2022-11-16T10:37:12.9729767Z",
+      "lastModifiedBy": "azure0minhthevo@gmail.com",
+      "lastModifiedByType": "User",
+      "lastModifiedAt": "2022-11-21T15:12:24.2758536Z"
+    }
+  }

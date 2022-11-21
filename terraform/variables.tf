@@ -8,6 +8,13 @@ variable "project_name" {
   default = "udacity-project-1"
 }
 
+variable "tags" {
+  type = map(string)
+  default = {
+    project = "udacity-project-1"
+  }
+}
+
 variable "packer_resource_group_name" {
   type = string
   default = "rg-udacity-images"
@@ -56,4 +63,8 @@ variable "notification_email" {
 variable "application_port" {
   type = number
   default = 80
+}
+
+locals {
+  ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7ze18ZKAIKLeDGxtWNtSnwBXuC/IzsTNqwtBwG4dXijMrwHgNj2dtq4z8MKI28cmmwc0EI64n+PYZeSLQLgaqTQLUgLI6BeIHSFasQ60Su/zgwsdZ7O/ywVKy48iYJHzrzIyqBGQFo7kr3LK2C4nko9O7piKByW96Vr6fY11+jUD2SoNLpI2ivYIgDRrRjai3KlMjgXmCDmad1x/nUpsgLEzKmeeLv98C1J8dMe8QzD5qMx2lchFhFKupreICMNUkPy4KAByOGZMoFrB5//weVOnlAfEw+zVtcqaOeliXNn50AlUKckLr+0HImKVUdi07x9yttOzPXqav0BEKhkq86uSAucQcKBo9P3lrY88yeMnLagQmSBIe4j4MlOKSrApf7DsEaQ1PZNvPzMpO1aN/Fp3odDW9JQc2RsiskZOlVMxyKXZsuBGB2c/YzHxoWtLdYsnat0atne7VtYBh0fXjx/ajuRo2tZw0pyLe4NZv1RAKUGIMNlg0/lWbi8cehAk= minhvo@LAPTOP-79FTFJBM"
 }
