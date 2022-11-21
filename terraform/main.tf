@@ -9,6 +9,7 @@ resource "azurerm_network_security_group" "nsg" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
+# just for testing
 resource "azurerm_network_security_rule" "internal" {
   name                        = "internal"
   priority                    = 100
@@ -73,9 +74,9 @@ resource "azurerm_lb_backend_address_pool" "backendpool" {
   name            = "backendpool-${var.project_name}"
 }
 
-resource "azurerm_lb_probe" "lb" {
-  loadbalancer_id = azurerm_lb.example.id
-  name            = "http-running-probe"
+resource "azurerm_lb_probe" "lbp" {
+  loadbalancer_id = azurerm_lb.lb.id
+  name            = "lbp-${var.project_name}"
   port            = 80
 }
 
@@ -89,7 +90,7 @@ resource "azurerm_lb_rule" "lb" {
     azurerm_lb_backend_address_pool.backendpool.id
   ]
   frontend_ip_configuration_name = "PublicIPAddress"
-  probe_id                       = azurerm_lb_probe.example.id
+  probe_id                       = azurerm_lb_probe.lbp.id
 }
 
 resource "azurerm_linux_virtual_machine_scale_set" "vmss" {
