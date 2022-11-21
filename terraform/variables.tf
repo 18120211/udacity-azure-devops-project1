@@ -20,15 +20,40 @@ variable "packer_image_name" {
 
 variable "admin_username" {
   type = string
-  default = "admin"
+  default = "minhvo"
 }
 
 variable "admin_password" {
   type = string
-  default = "admin"
+  default = "&&FFminhvo123"
 }
 
 variable "vm_size" {
   type = string
   default = "Standard_B1s"
+}
+
+variable "default_vm_capacity" {
+  type = number
+  default = 1
+}
+
+variable "min_vm_capacity" {
+  type = number
+  default = 1
+}
+
+variable "max_vm_capacity" {
+  type = number
+  default = 5
+}
+
+variable "notification_email" {
+  type = string
+  default = "minhthevo123@gmail.com"
+}
+
+variable "application_port" {
+  type = number
+  default = 80
 }

@@ -3,10 +3,24 @@ resource "azurerm_resource_group" "rg" {
   name     = "rg-${var.project_name}"
 }
 
-resource "azurerm_network_security_group" "sg" {
-  name                = "sg-${var.project_name}"
+resource "azurerm_network_security_group" "nsg" {
+  name                = "nsg-${var.project_name}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+}
+
+resource "azurerm_network_security_rule" "internal" {
+  name                        = "internal"
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.rg.name
+  network_security_group_name = azurerm_network_security_group.nsg.name
 }
 
 resource "azurerm_virtual_network" "vnet" {
@@ -59,58 +73,123 @@ resource "azurerm_lb_backend_address_pool" "backendpool" {
   name            = "backendpool-${var.project_name}"
 }
 
+resource "azurerm_lb_probe" "lb" {
+  loadbalancer_id = azurerm_lb.example.id
+  name            = "http-running-probe"
+  port            = 80
+}
 
-resource "azurerm_virtual_machine_scale_set" "vmss" {
-  name                = "vmss-${var.project_name}"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  upgrade_policy_mode = "Manual"
+resource "azurerm_lb_rule" "lb" {
+  loadbalancer_id = azurerm_lb.lb.id
+  name            = "http"
+  protocol        = "Tcp"
+  frontend_port   = var.application_port
+  backend_port    = var.application_port
+  backend_address_pool_ids = [
+    azurerm_lb_backend_address_pool.backendpool.id
+  ]
+  frontend_ip_configuration_name = "PublicIPAddress"
+  probe_id                       = azurerm_lb_probe.example.id
+}
 
-  sku {
-    name     = var.vm_size
-    tier     = "Standard"
-    capacity = 2
+resource "azurerm_linux_virtual_machine_scale_set" "vmss" {
+  name                            = "vmss-${var.project_name}"
+  resource_group_name             = azurerm_resource_group.rg.name
+  location                        = azurerm_resource_group.rg.location
+  sku                             = var.vm_size
+  instances                       = var.default_vm_capacity
+  admin_username                  = var.admin_username
+  admin_password                  = var.admin_password
+  disable_password_authentication = false
+
+  source_image_id = data.azurerm_image.image.id
+
+
+  os_disk {
+    storage_account_type = "Standard_LRS"
+    caching              = "ReadWrite"
+    disk_size_gb         = 30
   }
 
-  storage_profile_image_reference {
-    id = data.azurerm_image.image.id
-  }
 
-  storage_profile_os_disk {
-    name              = ""
-    caching           = "ReadWrite"
-    create_option     = "FromImage"
-    managed_disk_type = "Standard_LRS"
-  }
+  network_interface {
+    name                      = "vmss-${var.project_name}"
+    primary                   = true
+    network_security_group_id = azurerm_network_security_group.nsg.id
 
-  storage_profile_data_disk {
-    lun           = 0
-    caching       = "ReadWrite"
-    create_option = "Empty"
-    disk_size_gb  = 10
-  }
-
-  os_profile {
-    computer_name_prefix = "web-server"
-    admin_username       = var.admin_user
-    admin_password       = var.admin_password
-  }
-
-  os_profile_linux_config {
-    disable_password_authentication = false
-  }
-
-  network_profile {
-    name    = "terraformnetworkprofile"
-    primary = true
 
     ip_configuration {
-      name                                   = "IPConfiguration"
+      name                                   = "internal"
+      primary                                = true
       subnet_id                              = azurerm_subnet.subnet_private.id
       load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.backendpool.id]
-      primary                                = true
+    }
+  }
+}
+
+
+resource "azurerm_monitor_autoscale_setting" "autoscale" {
+  name                = "autoscale-${var.project_name}"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  target_resource_id  = azurerm_linux_virtual_machine_scale_set.vmss.id
+
+  profile {
+    name = "defaultProfile"
+
+    capacity {
+      default = var.default_vm_capacity
+      minimum = var.min_vm_capacity
+      maximum = var.max_vm_capacity
+    }
+
+    rule {
+      metric_trigger {
+        metric_name        = "Percentage CPU"
+        metric_resource_id = azurerm_linux_virtual_machine_scale_set.vmss.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "GreaterThan"
+        threshold          = 80
+        metric_namespace   = "microsoft.compute/virtualmachinescalesets"
+      }
+
+      scale_action {
+        direction = "Increase"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+
+    rule {
+      metric_trigger {
+        metric_name        = "Percentage CPU"
+        metric_resource_id = azurerm_linux_virtual_machine_scale_set.vmss.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "LessThan"
+        threshold          = 25
+      }
+
+      scale_action {
+        direction = "Decrease"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
     }
   }
 
-  tags = var.tags
+  notification {
+    email {
+      send_to_subscription_administrator    = true
+      send_to_subscription_co_administrator = true
+      custom_emails                         = [var.notification_email]
+    }
+  }
 }
