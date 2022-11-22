@@ -56,4 +56,4 @@
 
 ### For Reviewer
 1. Resource `azurerm_network_security_rule.internal` is just for testing and not be applied in prod environment
-2. The default rules of Azure network security group are completely meet the network restriction in the project -> So, no network rule need to be specified.  
+2. The default rules of Azure network security group are completely meet the network restriction in the project -> So, no network rule need to be specified. Kindly refer to MS offical docs: [Azure NSG](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview)
