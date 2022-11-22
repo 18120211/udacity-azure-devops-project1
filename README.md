@@ -52,3 +52,8 @@
 3. Web application
 - Note: This load balancer may be deleted when you review due to cost reduction
 ![Web server](screenshots/access_app.PNG)
+
+
+### For Reviewer
+1. Resource `azurerm_network_security_rule.internal` is just for testing and not be applied in prod environment
+2. The default rules of Azure network security group are completely meet the network restriction in the project -> So, no network rule need to be specified.  
